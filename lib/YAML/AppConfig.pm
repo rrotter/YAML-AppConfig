@@ -2,14 +2,13 @@ package YAML::AppConfig;
 use strict;
 use warnings;
 use Carp;
-use UNIVERSAL qw(isa);
 use Storable qw(dclone);  # For Deep Copy
 
 ####################
 # Global Variables
 ####################
 our $VERSION = '0.16';
-our @YAML_PREFS = qw(YAML::Syck YAML);
+our @YAML_PREFS = qw(YAML::Any YAML::XS YAML::Syck YAML);
 
 #########################
 # Class Methods: Public
@@ -113,7 +112,7 @@ sub _resolve_refs {
     if ( not ref $value ) {
         $value = $self->_resolve_scalar($value);
     }
-    elsif ( isa $value, 'HASH' ) {
+    elsif ( UNIVERSAL::isa $value, 'HASH' ) {
         $value = dclone($value);
         my @hidden = $self->_push_scope($value);
         for my $key ( keys %$value ) {
@@ -122,13 +121,13 @@ sub _resolve_refs {
         $self->_pop_scope(@hidden);
         return $value;
     }
-    elsif ( isa $value, 'ARRAY' ) {
+    elsif ( UNIVERSAL::isa $value, 'ARRAY' ) {
         $value = dclone($value);
         for my $item (@$value) {
             $item = $self->_resolve_refs( $item );
         }
     }
-    elsif ( isa $value, 'SCALAR' ) {
+    elsif ( UNIVERSAL::isa $value, 'SCALAR' ) {
         $value = $self->_resolve_scalar($$value);
     } 
     else {
@@ -592,6 +591,7 @@ L<YAML>, L<YAML::Syck>, L<Config::YAML>, L<YAML::ConfigFile>
 =head1 COPYRIGHT
 
 Copyright 2006 Matthew O'Connor, All Rights Reserved.
+Portions written by Ryan Rotter Copyright 2012, The Regents of the University of Michigan
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
